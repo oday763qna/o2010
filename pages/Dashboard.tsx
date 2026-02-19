@@ -78,8 +78,8 @@ const Dashboard: React.FC = () => {
     <div className="space-y-8 pb-10 animate-in fade-in duration-500">
       <header className="flex items-center justify-between pt-safe">
         <div>
-          <h1 className="text-3xl font-black app-text-primary tracking-tight">مرحباً، {state.user.name}</h1>
-          <p className="app-text-secondary text-sm font-bold opacity-80">نظرة عامة على إنتاجيتك</p>
+          <h1 className="text-3xl font-black app-text-primary tracking-tight">لوحة الإنتاجية</h1>
+          <p className="app-text-secondary text-sm font-bold opacity-80">نظرة عامة على أدائك اليومي</p>
         </div>
         <div className="w-12 h-12 rounded-2xl bg-[#007AFF]/10 flex items-center justify-center text-[#007AFF] shadow-sm">
           <Zap className="w-6 h-6 fill-current" />

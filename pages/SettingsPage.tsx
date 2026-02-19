@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { useApp } from '../store';
-import { User, Sun, Moon, Sparkles, Trash2, Info } from 'lucide-react';
+import { Sun, Moon, Sparkles, Trash2, Info } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const { state, dispatch } = useApp();
@@ -15,17 +16,6 @@ const SettingsPage: React.FC = () => {
         <h2 className="text-3xl font-black app-text-primary">الإعدادات</h2>
         <p className="app-text-secondary text-sm mt-1 font-medium">تحكم في بيئة إنتاجيتك</p>
       </header>
-
-      <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-widest app-text-secondary mr-2">هويتك</h3>
-        <div className="glass p-6 rounded-[2.5rem] flex items-center gap-5">
-          <div className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center bg-[#007AFF]/10 text-[#007AFF]"><User className="w-8 h-8" /></div>
-          <div className="flex-1">
-            <input type="text" value={state.user.name} onChange={e => dispatch({ type: 'UPDATE_USER', payload: { name: e.target.value } })} className="bg-transparent border-none outline-none text-xl font-black w-full app-text-primary placeholder-slate-400" placeholder="أدخل اسمك..." />
-            <p className="text-[10px] app-text-secondary font-bold mt-1">اسم المستخدم النشط</p>
-          </div>
-        </div>
-      </section>
 
       <section className="space-y-4">
         <h3 className="text-[10px] font-black uppercase tracking-widest app-text-secondary mr-2">وضع المظهر (صباحي/ليلي)</h3>
