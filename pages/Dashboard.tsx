@@ -24,14 +24,14 @@ const Dashboard: React.FC = () => {
   
   const isLight = state.theme === 'light';
 
-  // ضمان أن المكون قد تم تحميله في المتصفح قبل محاولة حساب أبعاد الرسم البياني
+  // ضمان تصيير الرسم البياني فقط في طرف العميل لتجنب أخطاء SSR
   useEffect(() => {
     setIsMounted(true);
     
-    // محاكاة تحديث الأبعاد بعد فترة قصيرة لحل مشاكل الحسابات الأولية في Recharts
-    const resizeTimer = setTimeout(() => {
+    // إطلاق حدث تغيير الحجم للتأكد من أن ResponsiveContainer يحسب الأبعاد بدقة بعد التحميل
+    const timer = setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
-    }, 100);
+    }, 200);
 
     const fetchAI = async () => {
       if (!state.aiEnabled || state.tasks.length === 0) return;
@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
     };
     
     fetchAI();
-    return () => clearTimeout(resizeTimer);
+    return () => clearTimeout(timer);
   }, [state.tasks.length, state.aiEnabled, state.user.totalFocusTime]);
 
   const stats = [
@@ -57,6 +57,7 @@ const Dashboard: React.FC = () => {
     { label: 'الاستمرار', value: state.user.streak, Icon: Flame, color: 'text-orange-600' },
   ];
 
+  // بيانات افتراضية للرسم البياني تعكس الإنتاجية الأسبوعية
   const weeklyData = [
     { name: 'أحد', completed: 3 },
     { name: 'إثن', completed: 6 },
@@ -71,7 +72,8 @@ const Dashboard: React.FC = () => {
     primary: '#007AFF',
     secondary: isLight ? '#cbd5e1' : '#334155',
     grid: isLight ? '#f1f5f9' : '#1e293b',
-    text: isLight ? '#555555' : '#aaaaaa'
+    text: isLight ? '#555555' : '#aaaaaa',
+    tooltipBg: isLight ? '#ffffff' : '#1e293b',
   };
 
   return (
@@ -103,7 +105,7 @@ const Dashboard: React.FC = () => {
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#007AFF]/10 rounded-full blur-[80px]" />
       </div>
 
-      {/* Stats */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
         {stats.map((stat, i) => (
           <div key={i} className="glass p-6 rounded-[2.2rem] flex flex-col items-center text-center shadow-sm">
@@ -114,25 +116,29 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Fixed Chart Container */}
-      <div className="glass p-6 rounded-[2.5rem] space-y-6 shadow-sm overflow-hidden">
+      {/* Fixed Chart Container with Non-Zero Width/Height */}
+      <div className="glass p-6 rounded-[2.5rem] space-y-6 shadow-sm overflow-hidden min-h-[350px]">
         <div className="flex justify-between items-center px-2">
           <h3 className="text-sm font-black app-text-primary">إحصائيات الإنجاز</h3>
           <span className="text-[10px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-3 py-1 rounded-full uppercase">أسبوعي</span>
         </div>
         
-        {/* الحاوية ذات الأبعاد الثابتة والمحددة بدقة لتجنب أخطاء Recharts */}
+        {/* الحاوية الأب ذات الأبعاد المحددة صراحةً (Fix for width/height -1) */}
         <div 
           ref={containerRef}
-          className="w-full h-[280px] min-h-[280px] relative"
-          style={{ width: '100%', height: '280px' }}
+          className="w-full relative flex items-center justify-center"
+          style={{ 
+            height: '280px', 
+            minHeight: '280px', 
+            width: '100%',
+            minWidth: '0' // لضمان المرونة في Flexbox
+          }}
         >
           {isMounted ? (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" aspect={undefined}>
               <BarChart 
                 data={weeklyData} 
                 margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-                // ضمان عدم التمدد العشوائي قبل حساب الأبعاد
               >
                 <CartesianGrid vertical={false} stroke={chartColors.grid} strokeDasharray="3 3" />
                 <XAxis 
@@ -146,8 +152,8 @@ const Dashboard: React.FC = () => {
                   contentStyle={{ 
                     borderRadius: '1.2rem', 
                     border: 'none', 
-                    background: isLight ? '#ffffff' : '#0f172a', 
-                    color: isLight ? '#222222' : '#eeeeee',
+                    background: chartColors.tooltipBg, 
+                    color: chartColors.text,
                     boxShadow: '0 15px 30px -5px rgba(0, 0, 0, 0.12)',
                     fontFamily: 'Cairo',
                     direction: 'rtl',
@@ -172,7 +178,7 @@ const Dashboard: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100/10 rounded-3xl space-y-3">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-500/5 rounded-3xl space-y-3">
                <div className="w-10 h-10 border-4 border-[#007AFF]/30 border-t-[#007AFF] rounded-full animate-spin"></div>
                <p className="text-[11px] font-bold app-text-secondary">جاري معايرة الرسوم البيانية...</p>
             </div>
