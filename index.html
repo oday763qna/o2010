@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f8fafc">
+    <link rel="manifest" href="manifest.json">
+    <title>مهام OD | المساعد الإنتاجي الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --safe-area-inset-top: env(safe-area-inset-top, 0px);
+        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        
+        /* Light Mode (Morning) */
+        --text-primary: #1a1a1a;
+        --text-secondary: #64748b;
+        --text-accent: #007AFF;
+        --bg-main: #f8fafc;
+        --bg-card: rgba(255, 255, 255, 0.8);
+        --border-color: rgba(0, 0, 0, 0.05);
+      }
+
+      .dark-theme {
+        /* Dark Mode (Night) */
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --text-accent: #3b82f6;
+        --bg-main: #020617;
+        --bg-card: rgba(15, 23, 42, 0.8);
+        --border-color: rgba(255, 255, 255, 0.05);
+      }
+
+      body {
+        font-family: 'Cairo', sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none;
+        transition: background-color 0.4s ease;
+      }
+      
+      .app-text-primary { color: var(--text-primary); }
+      .app-text-secondary { color: var(--text-secondary); }
+      .app-text-accent { color: var(--text-accent); }
+      
+      .pb-safe { padding-bottom: calc(1rem + var(--safe-area-inset-bottom)); }
+      .pt-safe { padding-top: calc(1rem + var(--safe-area-inset-top)); }
+      
+      .glass {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+      }
+
+      .slide-up {
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes slideUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+
+      .tap-target { min-height: 44px; min-width: 44px; }
+      ::-webkit-scrollbar { width: 0px; }
+      
+      input, textarea, select {
+        font-family: 'Cairo', sans-serif !important;
+      }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@^1.42.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+        "react/": "https://esm.sh/react@^19.2.4/",
+        "react": "https://esm.sh/react@^19.2.4",
+        "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+        "recharts": "https://esm.sh/recharts@^3.7.0",
+        "lucide-react": "https://esm.sh/lucide-react@0.460.0"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

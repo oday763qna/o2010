@@ -1,0 +1,7 @@
+{
+  "name": "OD Tasks - AI Productivity Assistant",
+  "description": "A high-performance AI-powered task management system that analyzes productivity patterns, breaks down complex tasks, and offers a distraction-free focus mode.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
