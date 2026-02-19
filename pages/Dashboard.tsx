@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../store';
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { getBehavioralAnalysis } from '../services/geminiService';
 import { 
   CheckCircle2, 
@@ -58,7 +59,7 @@ const Dashboard: React.FC = () => {
       <header className="flex items-center justify-between pt-safe">
         <div>
           <h1 className="text-3xl font-black app-text-primary">مرحباً، {state.user.name}</h1>
-          <p className="app-text-secondary text-sm font-medium">خطتك لليوم جاهزة</p>
+          <p className="app-text-secondary text-sm font-medium">خطتك لليوم جاهزة للبدء</p>
         </div>
         <div className="w-12 h-12 rounded-2xl bg-[#007AFF]/10 flex items-center justify-center text-[#007AFF]">
           <Zap className="w-6 h-6 fill-current" />
@@ -66,15 +67,15 @@ const Dashboard: React.FC = () => {
       </header>
 
       {/* Quick Action Card */}
-      <div className={`p-8 rounded-[2.5rem] border relative overflow-hidden ${isLight ? 'bg-white border-slate-100 shadow-sm' : 'bg-white/5 border-white/5 shadow-2xl'}`}>
+      <div className={`p-8 rounded-[2.5rem] border relative overflow-hidden transition-all duration-300 ${isLight ? 'bg-white border-slate-100 shadow-sm' : 'bg-white/5 border-white/5 shadow-2xl'}`}>
         <div className="relative z-10 space-y-4">
           <div className="flex items-center gap-2 text-[#007AFF] font-black text-[10px] uppercase tracking-widest">
-            <Target className="w-4 h-4" /> ركز على الهدف
+            <Target className="w-4 h-4" /> ركز على الهدف التالي
           </div>
-          <h2 className="text-2xl font-black app-text-primary">حول فكرتك إلى واقع ملموس</h2>
+          <h2 className="text-2xl font-black app-text-primary leading-tight">حول أفكارك العظيمة إلى<br/>واقع ملموس اليوم</h2>
           <button 
             onClick={() => navigate('/tasks')}
-            className="flex items-center gap-3 bg-[#007AFF] text-white px-8 py-4 rounded-[1.2rem] font-black text-sm shadow-xl shadow-[#007AFF]/30 active:scale-95 transition-all"
+            className="flex items-center gap-3 bg-[#007AFF] text-white px-8 py-4 rounded-[1.2rem] font-black text-sm shadow-xl shadow-[#007AFF]/30 active:scale-95 transition-all hover:bg-[#0066EE]"
           >
             إضافة مهمة جديدة <ArrowLeft className="w-4 h-4" />
           </button>
@@ -85,7 +86,7 @@ const Dashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
         {stats.map((stat, i) => (
-          <div key={i} className="glass p-5 rounded-[2rem] flex flex-col items-center text-center">
+          <div key={i} className="glass p-5 rounded-[2rem] flex flex-col items-center text-center hover:scale-[1.02] transition-transform">
             <stat.Icon className={`w-6 h-6 mb-3 ${stat.color}`} />
             <span className="text-[10px] font-black app-text-secondary uppercase mb-1">{stat.label}</span>
             <span className="text-2xl font-black app-text-primary">{stat.value}</span>
@@ -93,12 +94,16 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Weekly Chart */}
+      {/* Weekly Chart - Following dimensions requirement */}
       <div className="glass p-6 rounded-[2.5rem] space-y-6">
-        <h3 className="text-sm font-black app-text-primary">إنجازك الأسبوعي</h3>
-        <div className="w-full h-[250px]">
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-black app-text-primary">الإنتاجية الأسبوعية</h3>
+          <span className="text-[10px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-2 py-1 rounded-md">7 أيام أخيرة</span>
+        </div>
+        <div style={{ width: "100%", height: "100%", minHeight: "200px" }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weeklyData}>
+            <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid vertical={false} stroke={isLight ? '#f1f5f9' : '#1e293b'} />
               <XAxis 
                 dataKey="name" 
                 axisLine={false} 
@@ -106,12 +111,19 @@ const Dashboard: React.FC = () => {
                 tick={{ fontSize: 10, fill: isLight ? '#64748b' : '#94a3b8', fontWeight: 'bold' }} 
               />
               <Tooltip 
-                cursor={{ fill: 'rgba(0,0,0,0.02)' }} 
-                contentStyle={{ borderRadius: '1rem', border: 'none', background: isLight ? '#fff' : '#1e293b', color: isLight ? '#1a1a1a' : '#fff' }}
+                cursor={{ fill: 'rgba(0,122,255,0.05)' }} 
+                contentStyle={{ 
+                  borderRadius: '1rem', 
+                  border: 'none', 
+                  background: isLight ? '#fff' : '#0f172a', 
+                  color: isLight ? '#1a1a1a' : '#f8fafc',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                  fontFamily: 'Cairo'
+                }}
               />
-              <Bar dataKey="completed" radius={[8, 8, 8, 8]} barSize={20}>
+              <Bar dataKey="completed" radius={[6, 6, 6, 6]} barSize={18}>
                 {weeklyData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === 3 ? '#007AFF' : (isLight ? '#e2e8f0' : '#1e293b')} />
+                  <Cell key={`cell-${index}`} fill={index === 3 ? '#007AFF' : (isLight ? '#cbd5e1' : '#334155')} />
                 ))}
               </Bar>
             </BarChart>
@@ -121,31 +133,35 @@ const Dashboard: React.FC = () => {
 
       {/* AI Insights */}
       {state.aiEnabled && (
-        <div className="p-8 rounded-[2.5rem] border bg-[#007AFF]/5 border-[#007AFF]/20 space-y-6">
+        <div className="p-8 rounded-[2.5rem] border bg-[#007AFF]/5 border-[#007AFF]/20 space-y-6 transition-all">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-[#007AFF] rounded-2xl flex items-center justify-center shadow-lg shadow-[#007AFF]/20">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-black app-text-primary text-right">تحليل Gemini</h3>
-              <p className="text-[10px] text-[#007AFF] font-black uppercase tracking-wider text-right">رؤى إنتاجية ذكية</p>
+              <h3 className="text-lg font-black app-text-primary text-right">تحليل Gemini الذكي</h3>
+              <p className="text-[10px] text-[#007AFF] font-black uppercase tracking-wider text-right">رؤى عميقة لأدائك</p>
             </div>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             {loadingAI ? (
-              <div className="space-y-2 animate-pulse">
+              <div className="space-y-3 animate-pulse">
                 <div className="h-4 bg-slate-200/20 rounded-full w-full" />
                 <div className="h-4 bg-slate-200/20 rounded-full w-3/4" />
+                <div className="h-4 bg-slate-200/20 rounded-full w-5/6" />
               </div>
             ) : aiInsights.length > 0 ? (
               aiInsights.map((insight, i) => (
-                <div key={i} className="p-4 rounded-2xl glass text-xs font-bold leading-relaxed app-text-primary">
-                  {insight}
+                <div key={i} className="flex gap-4 p-4 rounded-2xl glass items-center text-right">
+                  <div className="w-2 h-2 rounded-full bg-[#007AFF] shrink-0" />
+                  <p className="text-xs font-bold leading-relaxed app-text-primary">{insight}</p>
                 </div>
               ))
             ) : (
-              <p className="text-xs app-text-secondary text-center italic">أكمل بعض المهام لتلقي تحليل ذكي لأدائك.</p>
+              <div className="p-6 text-center glass rounded-2xl border-dashed border-2 border-slate-500/10">
+                <p className="text-xs app-text-secondary font-bold">ابدأ بإكمال المهام لتفعيل محرك التحليل السلوكي للذكاء الاصطناعي.</p>
+              </div>
             )}
           </div>
         </div>

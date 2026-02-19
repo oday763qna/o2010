@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { HelpCircle, Sparkles } from 'lucide-react';
@@ -17,20 +18,24 @@ const TopHeader: React.FC = () => {
       <div className="flex items-center gap-2 pointer-events-auto">
         <button 
           onClick={() => navigate('/about')}
-          className={`w-11 h-11 rounded-2xl glass flex items-center justify-center shadow-lg active:scale-90 transition-all border-white/10 group`}
-          aria-label="معلومات عنا"
-          title="معلومات عنا"
+          className={`w-11 h-11 rounded-2xl glass flex items-center justify-center shadow-lg active:scale-90 transition-all border-white/10 group hover:bg-[#007AFF]/5`}
+          aria-label="دليل الاستخدام والمعلومات"
+          title="دليل الاستخدام والمعلومات"
         >
-          <HelpCircle className={`w-6 h-6 ${isLight ? 'text-[#007AFF]' : 'text-blue-400'} group-hover:rotate-12 transition-transform`} />
+          <HelpCircle className={`w-6 h-6 transition-transform group-hover:rotate-12 ${isLight ? 'text-[#007AFF]' : 'text-blue-400'}`} />
         </button>
       </div>
       
-      {/* عرض حالة الذكاء الاصطناعي بشكل مصغر */}
+      {/* عرض حالة الذكاء الاصطناعي بشكل مصغر واحترافي */}
       <div className="pointer-events-auto">
-        {state.aiEnabled && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#007AFF]/10 border border-[#007AFF]/20 backdrop-blur-md">
-            <Sparkles className="w-3 h-3 text-[#007AFF]" />
-            <span className="text-[8px] font-black text-[#007AFF] uppercase tracking-tighter">AI نشط</span>
+        {state.aiEnabled ? (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#007AFF]/10 border border-[#007AFF]/20 backdrop-blur-md shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-[#007AFF] animate-pulse" />
+            <span className="text-[9px] font-black text-[#007AFF] uppercase tracking-tighter">AI نشط ومستعد</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-500/10 border border-slate-500/20 backdrop-blur-md opacity-40">
+            <span className="text-[9px] font-black app-text-secondary uppercase tracking-tighter">AI معطل</span>
           </div>
         )}
       </div>
