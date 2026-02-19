@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../store';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { getBehavioralAnalysis } from '../services/geminiService';
@@ -20,10 +20,19 @@ const Dashboard: React.FC = () => {
   const [aiInsights, setAiInsights] = useState<string[]>([]);
   const [loadingAI, setLoadingAI] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const isLight = state.theme === 'light';
 
+  // ضمان أن المكون قد تم تحميله في المتصفح قبل محاولة حساب أبعاد الرسم البياني
   useEffect(() => {
     setIsMounted(true);
+    
+    // محاكاة تحديث الأبعاد بعد فترة قصيرة لحل مشاكل الحسابات الأولية في Recharts
+    const resizeTimer = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
+
     const fetchAI = async () => {
       if (!state.aiEnabled || state.tasks.length === 0) return;
       setLoadingAI(true);
@@ -36,7 +45,9 @@ const Dashboard: React.FC = () => {
         setLoadingAI(false);
       }
     };
+    
     fetchAI();
+    return () => clearTimeout(resizeTimer);
   }, [state.tasks.length, state.aiEnabled, state.user.totalFocusTime]);
 
   const stats = [
@@ -68,31 +79,31 @@ const Dashboard: React.FC = () => {
       <header className="flex items-center justify-between pt-safe">
         <div>
           <h1 className="text-3xl font-black app-text-primary tracking-tight">مرحباً، {state.user.name}</h1>
-          <p className="app-text-secondary text-sm font-bold opacity-80">خطتك جاهزة لإنجازات اليوم</p>
+          <p className="app-text-secondary text-sm font-bold opacity-80">نظرة عامة على إنتاجيتك</p>
         </div>
         <div className="w-12 h-12 rounded-2xl bg-[#007AFF]/10 flex items-center justify-center text-[#007AFF] shadow-sm">
           <Zap className="w-6 h-6 fill-current" />
         </div>
       </header>
 
-      {/* Hero Quick Action */}
+      {/* Hero Card */}
       <div className={`p-8 rounded-[2.5rem] border relative overflow-hidden transition-all duration-500 ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/5 border-white/5 shadow-2xl'}`}>
         <div className="relative z-10 space-y-4">
           <div className="flex items-center gap-2 text-[#007AFF] font-black text-[10px] uppercase tracking-widest">
-            <Target className="w-4 h-4" /> هدفك القادم بانتظارك
+            <Target className="w-4 h-4" /> ركز على ما يهم
           </div>
-          <h2 className="text-2xl font-black app-text-primary leading-tight">اجعل اليوم بداية<br/>لفصل جديد من الإنجاز</h2>
+          <h2 className="text-2xl font-black app-text-primary leading-tight">استثمر وقتك بذكاء<br/>وحقق أهدافك اليوم</h2>
           <button 
             onClick={() => navigate('/tasks')}
             className="flex items-center gap-3 bg-[#007AFF] text-white px-8 py-4 rounded-[1.2rem] font-black text-sm shadow-xl shadow-[#007AFF]/30 active:scale-95 transition-all hover:bg-[#0066EE]"
           >
-            إضافة مهمة الآن <ArrowLeft className="w-4 h-4" />
+            استعراض المهام <ArrowLeft className="w-4 h-4" />
           </button>
         </div>
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#007AFF]/10 rounded-full blur-[80px]" />
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
         {stats.map((stat, i) => (
           <div key={i} className="glass p-6 rounded-[2.2rem] flex flex-col items-center text-center shadow-sm">
@@ -103,18 +114,27 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Weekly Performance Chart */}
-      <div className="glass p-6 rounded-[2.5rem] space-y-6 shadow-sm">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-black app-text-primary">مستوى الأداء الأسبوعي</h3>
-          <span className="text-[10px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-3 py-1 rounded-full uppercase">آخر 7 أيام</span>
+      {/* Fixed Chart Container */}
+      <div className="glass p-6 rounded-[2.5rem] space-y-6 shadow-sm overflow-hidden">
+        <div className="flex justify-between items-center px-2">
+          <h3 className="text-sm font-black app-text-primary">إحصائيات الإنجاز</h3>
+          <span className="text-[10px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-3 py-1 rounded-full uppercase">أسبوعي</span>
         </div>
-        {/* Important: Fixed height to prevent Recharts -1 width error */}
-        <div className="w-full h-[280px] min-h-[280px]">
+        
+        {/* الحاوية ذات الأبعاد الثابتة والمحددة بدقة لتجنب أخطاء Recharts */}
+        <div 
+          ref={containerRef}
+          className="w-full h-[280px] min-h-[280px] relative"
+          style={{ width: '100%', height: '280px' }}
+        >
           {isMounted ? (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke={chartColors.grid} />
+              <BarChart 
+                data={weeklyData} 
+                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                // ضمان عدم التمدد العشوائي قبل حساب الأبعاد
+              >
+                <CartesianGrid vertical={false} stroke={chartColors.grid} strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
@@ -130,25 +150,37 @@ const Dashboard: React.FC = () => {
                     color: isLight ? '#222222' : '#eeeeee',
                     boxShadow: '0 15px 30px -5px rgba(0, 0, 0, 0.12)',
                     fontFamily: 'Cairo',
-                    direction: 'rtl'
+                    direction: 'rtl',
+                    textAlign: 'right'
                   }}
+                  itemStyle={{ direction: 'rtl', textAlign: 'right' }}
                 />
-                <Bar dataKey="completed" radius={[6, 6, 6, 6]} barSize={22}>
+                <Bar 
+                  dataKey="completed" 
+                  radius={[6, 6, 6, 6]} 
+                  barSize={24}
+                  animationDuration={1500}
+                >
                   {weeklyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === 3 ? chartColors.primary : chartColors.secondary} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={index === 3 ? chartColors.primary : chartColors.secondary} 
+                      className="transition-all duration-300"
+                    />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-100/10 rounded-3xl animate-pulse">
-               <p className="text-[11px] font-bold app-text-secondary">جاري تهيئة الرسوم البيانية...</p>
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100/10 rounded-3xl space-y-3">
+               <div className="w-10 h-10 border-4 border-[#007AFF]/30 border-t-[#007AFF] rounded-full animate-spin"></div>
+               <p className="text-[11px] font-bold app-text-secondary">جاري معايرة الرسوم البيانية...</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* AI Behavioral Analysis */}
+      {/* AI Insights Section */}
       {state.aiEnabled && (
         <div className="p-8 rounded-[2.8rem] border bg-[#007AFF]/5 border-[#007AFF]/15 space-y-6 shadow-sm">
           <div className="flex items-center gap-4">
@@ -156,8 +188,8 @@ const Dashboard: React.FC = () => {
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-black app-text-primary text-right tracking-tight">رؤى Gemini الذكية</h3>
-              <p className="text-[10px] text-[#007AFF] font-black uppercase tracking-widest text-right">تحليل سلوكي لإنتاجيتك</p>
+              <h3 className="text-lg font-black app-text-primary text-right tracking-tight">تحليل Gemini الذكي</h3>
+              <p className="text-[10px] text-[#007AFF] font-black uppercase tracking-widest text-right">نصائح مخصصة لأدائك</p>
             </div>
           </div>
           
@@ -170,14 +202,14 @@ const Dashboard: React.FC = () => {
               </div>
             ) : aiInsights.length > 0 ? (
               aiInsights.map((insight, i) => (
-                <div key={i} className="flex gap-4 p-4 rounded-2xl glass items-center text-right border-white/5 shadow-sm">
+                <div key={i} className="flex gap-4 p-5 rounded-2xl glass items-center text-right border-white/5 shadow-sm active:scale-[0.99] transition-all">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#007AFF] shrink-0 shadow-sm shadow-[#007AFF]/40" />
                   <p className="text-xs font-bold leading-relaxed app-text-primary">{insight}</p>
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center glass rounded-3xl border-dashed border-2 border-slate-500/15">
-                <p className="text-xs app-text-secondary font-bold opacity-70">أكمل بعض المهام وجلسات التركيز لتزويد Gemini بالبيانات اللازمة لتحليل أدائك.</p>
+              <div className="p-10 text-center glass rounded-3xl border-dashed border-2 border-slate-500/15">
+                <p className="text-xs app-text-secondary font-bold opacity-60">أكمل مهامك اليوم لتبدأ خوارزمية Gemini في تحليل أنماط إنتاجيتك وتقديم نصائح ذكية.</p>
               </div>
             )}
           </div>

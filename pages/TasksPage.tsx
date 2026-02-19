@@ -180,7 +180,7 @@ const TasksPage: React.FC = () => {
         <button onClick={() => setIsAddOpen(true)} className="w-12 h-12 bg-[#007AFF] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#007AFF]/20 active:scale-90 hover:bg-[#0066EE] transition-all"><Plus className="w-7 h-7" /></button>
       </header>
 
-      {/* Modern Search Bar */}
+      {/* البحث الفوري */}
       <div className="relative group">
         <Search className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 app-text-secondary opacity-40 group-focus-within:opacity-80 transition-opacity" />
         <input 
@@ -193,13 +193,12 @@ const TasksPage: React.FC = () => {
         {searchTerm && <button onClick={() => setSearchTerm('')} className="absolute left-6 top-1/2 -translate-y-1/2 text-rose-600 active:scale-90 transition-transform"><X className="w-5 h-5" /></button>}
       </div>
 
-      {/* Tasks Grid/List */}
       <div className="space-y-5">
         {filteredTasks.length === 0 ? (
           <div className="py-28 text-center opacity-40 flex flex-col items-center justify-center">
             <Target className="w-20 h-20 mb-6 app-text-primary" />
-            <p className="font-black text-lg tracking-tight app-text-primary">لا توجد مهام مطابقة</p>
-            <p className="text-[11px] font-bold mt-2 app-text-secondary">ابدأ يومك بتحديد أهداف واضحة وإنجازها.</p>
+            <p className="font-black text-lg tracking-tight app-text-primary">لا توجد مهام حالياً</p>
+            <p className="text-[11px] font-bold mt-2 app-text-secondary">اضغط على زر (+) لتبدأ رحلة إنجازاتك.</p>
           </div>
         ) : (
           filteredTasks.map(task => (
@@ -245,7 +244,7 @@ const TasksPage: React.FC = () => {
 
       {selectedTask && <TaskDetailsModal task={selectedTask} onClose={() => setSelectedTask(null)} />}
 
-      {/* Advanced Add Task Modal */}
+      {/* نافذة إضافة المهمة مع التحقق من الحقول الإجبارية */}
       {isAddOpen && (
         <div className="fixed inset-0 z-[3000] bg-black/65 backdrop-blur-lg flex items-end slide-up">
           <div className={`w-full p-8 space-y-8 rounded-t-[3.5rem] border-t pb-safe max-h-[92vh] overflow-y-auto ${isLight ? 'bg-white border-slate-200' : 'bg-[#020617] border-white/10'}`}>
@@ -260,14 +259,14 @@ const TasksPage: React.FC = () => {
                   <label className="text-[11px] font-black uppercase app-text-secondary tracking-widest opacity-70">اسم المهمة *</label>
                   {errors.title && <span className="text-rose-600 text-[10px] font-bold">هذا الحقل مطلوب</span>}
                 </div>
-                <input type="text" placeholder="مثال: تحليل متطلبات المشروع البرمجي" value={newTask.title} onChange={e => { setNewTask({...newTask, title: e.target.value}); setErrors(prev => ({...prev, title: false})); }} className={inputClass(errors.title)} />
+                <input type="text" placeholder="ما الذي تنوي إنجازه؟" value={newTask.title} onChange={e => { setNewTask({...newTask, title: e.target.value}); setErrors(prev => ({...prev, title: false})); }} className={inputClass(errors.title)} />
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center px-1">
-                  <label className="text-[11px] font-black uppercase app-text-secondary tracking-widest opacity-70">وصف موجز للمهمة *</label>
+                  <label className="text-[11px] font-black uppercase app-text-secondary tracking-widest opacity-70">وصف المهمة *</label>
                   {errors.description && <span className="text-rose-600 text-[10px] font-bold">هذا الحقل مطلوب</span>}
                 </div>
-                <textarea placeholder="ما الذي ترغب في تحقيقه بنهاية هذه المهمة؟" value={newTask.description} onChange={e => { setNewTask({...newTask, description: e.target.value}); setErrors(prev => ({...prev, description: false})); }} className={`${inputClass(errors.description)} h-28 resize-none`} />
+                <textarea placeholder="أضف تفاصيل إضافية هنا..." value={newTask.description} onChange={e => { setNewTask({...newTask, description: e.target.value}); setErrors(prev => ({...prev, description: false})); }} className={`${inputClass(errors.description)} h-28 resize-none`} />
               </div>
               
               <div className="grid grid-cols-2 gap-5">
