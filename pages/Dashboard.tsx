@@ -19,7 +19,26 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [aiInsights, setAiInsights] = useState<string[]>([]);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const isLight = state.theme === 'light';
+
+  // Prevent SSR/Hydration errors with charts and ensure container is ready
+  useEffect(() => {
+    setIsMounted(true);
+    const fetchAI = async () => {
+      if (!state.aiEnabled || state.tasks.length === 0) return;
+      setLoadingAI(true);
+      try {
+        const insights = await getBehavioralAnalysis(state.tasks, state.user.totalFocusTime);
+        setAiInsights(insights);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingAI(false);
+      }
+    };
+    fetchAI();
+  }, [state.tasks.length, state.aiEnabled, state.user.totalFocusTime]);
 
   const stats = [
     { label: 'المهام', value: state.user.completedTasks, Icon: CheckCircle2, color: 'text-emerald-500' },
@@ -37,22 +56,6 @@ const Dashboard: React.FC = () => {
     { name: 'جمع', completed: 5 },
     { name: 'سبت', completed: 2 },
   ];
-
-  useEffect(() => {
-    const fetchAI = async () => {
-      if (!state.aiEnabled || state.tasks.length === 0) return;
-      setLoadingAI(true);
-      try {
-        const insights = await getBehavioralAnalysis(state.tasks, state.user.totalFocusTime);
-        setAiInsights(insights);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingAI(false);
-      }
-    };
-    fetchAI();
-  }, [state.tasks.length, state.aiEnabled]);
 
   return (
     <div className="space-y-8 pb-10 animate-in fade-in duration-500">
@@ -100,34 +103,42 @@ const Dashboard: React.FC = () => {
           <h3 className="text-sm font-black app-text-primary">الإنتاجية الأسبوعية</h3>
           <span className="text-[10px] font-bold text-[#007AFF] bg-[#007AFF]/10 px-2 py-1 rounded-md">7 أيام أخيرة</span>
         </div>
-        <div style={{ width: "100%", height: "100%", minHeight: "200px" }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-              <CartesianGrid vertical={false} stroke={isLight ? '#f1f5f9' : '#1e293b'} />
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fontSize: 10, fill: isLight ? '#64748b' : '#94a3b8', fontWeight: 'bold' }} 
-              />
-              <Tooltip 
-                cursor={{ fill: 'rgba(0,122,255,0.05)' }} 
-                contentStyle={{ 
-                  borderRadius: '1rem', 
-                  border: 'none', 
-                  background: isLight ? '#fff' : '#0f172a', 
-                  color: isLight ? '#1a1a1a' : '#f8fafc',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                  fontFamily: 'Cairo'
-                }}
-              />
-              <Bar dataKey="completed" radius={[6, 6, 6, 6]} barSize={18}>
-                {weeklyData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === 3 ? '#007AFF' : (isLight ? '#cbd5e1' : '#334155')} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Fixed height container for Recharts ResponsiveContainer to avoid width(-1) error */}
+        <div className="w-full h-[250px] min-h-[250px]">
+          {isMounted ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke={isLight ? '#f1f5f9' : '#1e293b'} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: isLight ? '#64748b' : '#94a3b8', fontWeight: 'bold' }} 
+                />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(0,122,255,0.05)' }} 
+                  contentStyle={{ 
+                    borderRadius: '1rem', 
+                    border: 'none', 
+                    background: isLight ? '#fff' : '#0f172a', 
+                    color: isLight ? '#1a1a1a' : '#f8fafc',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    fontFamily: 'Cairo',
+                    direction: 'rtl'
+                  }}
+                />
+                <Bar dataKey="completed" radius={[6, 6, 6, 6]} barSize={18}>
+                  {weeklyData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={index === 3 ? '#007AFF' : (isLight ? '#cbd5e1' : '#334155')} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-100/10 rounded-2xl animate-pulse">
+               <p className="text-[10px] font-bold app-text-secondary">جاري تحميل الرسوم البيانية...</p>
+            </div>
+          )}
         </div>
       </div>
 
