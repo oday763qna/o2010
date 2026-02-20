@@ -36,7 +36,7 @@ export const breakdownTask = async (taskTitle: string, description: string) => {
     }
   });
 
-  return JSON.parse(response.text);
+  return JSON.parse(response.text || '{}');
 };
 
 export const getBehavioralAnalysis = async (tasks: Task[], focusTime: number) => {
@@ -58,5 +58,5 @@ export const getBehavioralAnalysis = async (tasks: Task[], focusTime: number) =>
     }
   });
 
-  return JSON.parse(response.text);
+  return JSON.parse(response.text || '[]');
 };

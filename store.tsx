@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { AppState, Task, Note, UserStats, Theme } from './types';
 
@@ -14,6 +15,21 @@ type Action =
   | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'HYDRATE'; payload: AppState };
 
+// Level thresholds: 0, 500, 1500, 3000, 5000, 7500, 10000, 13500, 17500, 22000
+const LEVEL_THRESHOLDS = [0, 500, 1500, 3000, 5000, 7500, 10000, 13500, 17500, 22000, 30000];
+
+const calculateLevel = (xp: number) => {
+  let level = 1;
+  for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
+    if (xp >= LEVEL_THRESHOLDS[i]) {
+      level = i + 1;
+    } else {
+      break;
+    }
+  }
+  return Math.min(level, 10);
+};
+
 const initialState: AppState = {
   tasks: [],
   notes: [],
@@ -25,6 +41,7 @@ const initialState: AppState = {
     totalFocusTime: 0,
     completedTasks: 0,
     focusSessions: 0,
+    lastActivityDate: null,
   },
   theme: 'light',
   onboarded: false,
@@ -58,10 +75,37 @@ function reducer(state: AppState, action: Action): AppState {
       newState.notes = state.notes.map(n => n.id === action.payload.id ? { ...action.payload, updatedAt: new Date().toISOString() } : n);
       break;
     case 'UPDATE_USER':
-      const updatedUser = { ...state.user, ...action.payload };
-      // XP Logic: 1000 XP per level, max level 5
-      const newLevel = Math.min(Math.floor(updatedUser.xp / 1000) + 1, 5);
-      newState.user = { ...updatedUser, level: newLevel };
+      const currentUser = state.user;
+      const updates = action.payload;
+      
+      let newXp = updates.xp !== undefined ? updates.xp : currentUser.xp;
+      let newLevel = calculateLevel(newXp);
+      let newStreak = currentUser.streak;
+      let newLastActivity = currentUser.lastActivityDate;
+
+      // Handle Streak logic when a task is completed (if completedTasks increments)
+      if (updates.completedTasks !== undefined && updates.completedTasks > currentUser.completedTasks) {
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        if (currentUser.lastActivityDate === yesterdayStr) {
+          newStreak = currentUser.streak + 1;
+        } else if (currentUser.lastActivityDate !== today) {
+          newStreak = 1;
+        }
+        newLastActivity = today;
+      }
+
+      newState.user = { 
+        ...currentUser, 
+        ...updates, 
+        xp: newXp, 
+        level: newLevel,
+        streak: newStreak,
+        lastActivityDate: newLastActivity
+      };
       break;
     case 'SET_FOCUS_MODE':
       newState.isFocusMode = action.payload;

@@ -214,14 +214,16 @@ const TasksPage: React.FC = () => {
                 <button onClick={(e) => { 
                   e.stopPropagation(); 
                   const isCompleting = task.status !== 'مكتملة';
+                  const xpGain = task.priority === 'عالية' ? 75 : task.priority === 'متوسطة' ? 60 : 40;
+
                   dispatch({ 
                     type: 'UPDATE_TASK', 
                     payload: { ...task, status: isCompleting ? 'مكتملة' : 'قيد الانتظار', completionPercentage: isCompleting ? 100 : 0 } 
                   }); 
                   if(isCompleting) {
-                    dispatch({ type: 'UPDATE_USER', payload: { completedTasks: state.user.completedTasks + 1, xp: state.user.xp + 60 } });
+                    dispatch({ type: 'UPDATE_USER', payload: { completedTasks: state.user.completedTasks + 1, xp: state.user.xp + xpGain } });
                   } else {
-                    dispatch({ type: 'UPDATE_USER', payload: { completedTasks: Math.max(0, state.user.completedTasks - 1), xp: Math.max(0, state.user.xp - 60) } });
+                    dispatch({ type: 'UPDATE_USER', payload: { completedTasks: Math.max(0, state.user.completedTasks - 1), xp: Math.max(0, state.user.xp - xpGain) } });
                   }
                 }} className={`w-11 h-11 rounded-2xl border-2 flex items-center justify-center transition-all shadow-sm ${task.status === 'مكتملة' ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300 active:border-[#007AFF] hover:border-[#007AFF]'}`}>
                   {task.status === 'مكتملة' && <CheckCircle2 className="w-5 h-5 text-white" />}

@@ -1,3 +1,4 @@
+
 export type Category = 'دراسة' | 'عمل' | 'ترفيه' | 'أخرى';
 export type Priority = 'منخفضة' | 'متوسطة' | 'عالية';
 export type Status = 'قيد الانتظار' | 'قيد التنفيذ' | 'مكتملة';
@@ -45,6 +46,7 @@ export interface UserStats {
   totalFocusTime: number;
   completedTasks: number;
   focusSessions: number;
+  lastActivityDate: string | null;
 }
 
 export interface AppState {
